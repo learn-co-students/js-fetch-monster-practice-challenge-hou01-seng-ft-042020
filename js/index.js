@@ -1,103 +1,124 @@
-const divMonsters = document.querySelector('#monster-container');
-const monsterCont = document.querySelector('#create-monster');
-let num = 2;
-let url = `http://localhost:3000/monsters/?_limit=5&_page=${num}`;
-fetchMons(url);
+let num = 1
+const url = `http://localhost:3000/monsters/?_limit=50&_page=${num}`
 
-function fetchMons(url){
-  fetch(url)
+const createMonsterDiv = document.querySelector('#create-monster')
+const createMonsterForm = document.createElement('form')
+const MonsterContainerDiv = document.querySelector('#monster-container')
+const btnFwd = document.querySelector('#forward')
+const btnBack = document.querySelector('#back')
+
+createNewMonster();
+
+fetch(url)
   .then(res => res.json())
-  .then(json => {
-    for (const mons of json) {
-      allMons(mons);
+  .then(monstersJson => {
+    for(const monsObj of monstersJson) {
+      addMonsterToDOM(monsObj)
     }
-    createMons();
-  })
-  // pageBtn();
-}
+  });
 
-function allMons(mons) {
+//make each monster
+function addMonsterToDOM(monsObj) {
+  const h2 = document.createElement('h2')
+  const h4 = document.createElement('h4')
+  const p = document.createElement("p")
+  const monsObjDiv = document.createElement('div')
 
-  const h2 = document.createElement('h2');
-  const h4 = document.createElement('h4');
-  const p = document.createElement('p');
+  h2.innerHTML = monsObj.name
+  h4.innerHTML = monsObj.age
+  p.innerHTML = monsObj.description
 
-  h2.innerText = mons.name;
-  h4.innerText = mons.age;
-  p.innerText = mons.description;
+  MonsterContainerDiv.append(monsObjDiv)
+  monsObjDiv.append(h2, h4, p)
 
-  divMonsters.append(h2, h4, p)
-}
+};
 
-function createMons(json) {
-  const form = document.createElement('form');
-  const inputName = document.createElement('input');
-  const inputAge = document.createElement('input');
-  const inputDesc = document.createElement('input');
-  const btnSubmit = document.createElement('button');
+//create monster form
+function createNewMonster(){
+  createMonsterDiv.append(createMonsterForm)
 
-  inputName.placeholder ='name';
-  inputAge.placeholder = 'age';
-  inputDesc.placeholder= 'description';
-  btnSubmit.innerText = 'Create Monster';
-  btnSubmit.type = 'submit';
-  form.append(inputName, inputAge, inputDesc, btnSubmit)
-  monsterCont.append(form)
+  const inputName = document.createElement('input')
+  const inputAge = document.createElement('input')
+  const inputDesc = document.createElement('input')
+  const btnSubmit = document.createElement('button')
 
-  form.addEventListener('submit', e => {
+  inputName.placeholder = 'Name'
+  inputAge.placeholder = 'Age'
+  inputDesc.placeholder = 'Description'
+  btnSubmit.innerText = 'Submit'
+
+  createMonsterForm.append(inputName, inputAge, inputDesc, btnSubmit)
+
+//POST new monster
+  btnSubmit.addEventListener('click', e =>{
     e.preventDefault();
-    const resultName = inputName.value;
-    const resultAge = inputAge.value;
-    const resultDescription = inputDesc.value;
-    
-    fetch('http://localhost:3000/monsters', {
-      method: "POST",
+
+    const inputNameValue = inputName.value
+    const inputAgeValue = inputAge.value
+    const inputDescValue = inputDesc.value
+
+    const options = {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type" : "application/json",
         "Accept": "application/json"
       },
-      body: JSON.stringify({
-        name: resultName,
-        age: resultAge,
-        description: resultDescription
+      body: JSON.stringify ({
+        name: inputNameValue,
+        age: inputAgeValue,
+        description: inputDescValue
       })
-    })
+    };
+
+    fetch (url, options)
     .then(res => res.json())
-    .then(json => {
-      allMons(mons)
-      form.reset();
+    .then(monsObj => {
+      addMonsterToDOM(monsObj);
+      createMonsterForm.reset();
+    });
 
-    })
+  });
 
-  })
-}
-// function pageBtn(){
-//     divMonsters.innerHTML = "";
+};
 
-//   const btnBack = document.querySelector('#back');
-//   const btnForward = document.querySelector('#forward');
+//forward and back button functionality
+btnFwd.addEventListener('click', e=> {
+  e.preventDefault();
 
-//   // btnBack.addEventListener('click', e => {
-//   //   let num = --num;
-//   //   let url = `http://localhost:3000/monsters/?_limit=5&_page=${num}`;
-//   // })
-//   btnForward.addEventListener('click', e => {
-//   num = num + 1
-//   url = `http://localhost:3000/monsters/?_limit=5&_page=${num}`;
-//   // window.location.href = url
-//   console.log(url)
-//   fetchMons(url);
-//   })
-  
-// }
+  MonsterContainerDiv.innerHTML = ''
 
-// function clearDiv() {
-//   divMonsters.innerHTML = "";
-// }
+  //increase page number
+  ++num
 
+  fetch(`http://localhost:3000/monsters/?_limit=50&_page=${num}`)
+    .then(res => res.json())
+    .then(monstersJson => {
+      for (const monsObj of monstersJson) {
+        addMonsterToDOM(monsObj)
+      }
+    });
 
-// <h1>Monstr Inc.</h1>
-// <div id='create-monster'></div>
-// <div id='monster-container'></div>
-// <button id="back"><=</button>
-// <button id="forward">=></button>
+});
+
+btnBack.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  MonsterContainerDiv.innerHTML = ''
+
+  //decrease page number
+
+  --num
+
+  if (num === 0){
+    num = 1
+  }
+
+  fetch(`http://localhost:3000/monsters/?_limit=50&_page=${num}`)
+    .then(res => res.json())
+    .then(monstersJson => {
+      for (const monsObj of monstersJson) {
+        addMonsterToDOM(monsObj)
+      }
+    });
+
+});
