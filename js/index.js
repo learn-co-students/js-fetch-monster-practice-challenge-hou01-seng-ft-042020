@@ -5,6 +5,8 @@ const newMonsDiv = document.querySelector('#create-monster')
 const newMonsForm = document.createElement('form')
 const btnBack = document.querySelector('#back')
 btnBack.addEventListener('click',(e) => {
+  e.preventDefault();
+
   monsDiv.innerHTML = ''
   if (num > 1){
     num = num - 1
@@ -20,6 +22,8 @@ btnBack.addEventListener('click',(e) => {
 
 const btnForward = document.querySelector('#forward')
 btnForward.addEventListener('click',(e) => {
+  e.preventDefault();
+
   monsDiv.innerHTML = ''
   num = num + 1
   fetch(`http://localhost:3000/monsters/?_limit=50&_page=${num}`)
